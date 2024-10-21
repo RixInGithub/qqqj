@@ -26,7 +26,27 @@
 	<body>
 		<script>
 (async function(me) {
-	void(await document.fonts.ready)
+	function loadImage(...{...a}) {
+		a = Object.assign({}, ...Object.values(a))
+		var [[currID, curr], ...rest] = Object.entries(a)
+		rest = rest.map(function(b){return Object.fromEntries(b)})
+		var i = new Image()
+		i.src = curr
+		i.setAttribute("id", currID)
+		return new Promise(function(reso, reje) {
+			i.onload = async function() {
+				if (!(rest.length)) return reso()
+				try {
+					reso(await loadImage(...rest))
+				} catch (e) {
+					reje(e)
+				}
+			}
+			i.onerror = function() {reje(`failed to load image ${currID}`)}
+			document.head.appendChild(i)
+		})
+	}
+	await loadImage({"picker": "picker.png"})
 	me.remove()
 	var s = 96
 	var cnv = document.createElement("canvas")
@@ -34,8 +54,8 @@
 	document.body.appendChild(cnv)
 	var ctx = cnv.getContext("2d")
 	vars = {}
-	function drawTxt(txt, [x, y]) {
-		var qual = 8
+	function drawTxt(txt, xy) {
+		var q = 8
 		var fontSize = (function() {
 			var d = document.createElement("div")
 			d.style.font = ctx.font
@@ -44,32 +64,40 @@
 			var res = parseInt(getComputedStyle(d).fontSize)
 			d.remove()
 			return res
-		})()
-		fontSize *= qual
+		})()*q
 		var c = cnv.cloneNode()
-		c.width = c.height = s * qual
+		c.width = c.height = s * q
 		var cCtx = c.getContext("2d")
 		cCtx.font = [fontSize + "px", ...ctx.font.split(" ").slice(1)].join(" ")
 		cCtx.fillStyle = ctx.fillStyle
 		cCtx.textBaseline = ctx.textBaseline
-		cCtx.fillText(txt, x * qual, y * qual)
+		cCtx.fillText(txt, ...xy.reduce(function(a,b){return[...a,b*q]},[]))
 		ctx.drawImage(c, 0, 0, c.width, c.height, 0, 0, s, s)
 	}
 	function render() {
 		ctx.fillStyle = "Red"
 		ctx.fillRect(0, 0, s, s)
 		ctx.fillStyle = "#800000"
-		drawTxt("qqqj", [Math.floor((s - ctx.measureText("qqqj").width) / 2), 0])
+		var lbl = {menu: "qqqj", creds: "Credits"}[vars.state]
+		drawTxt(lbl, [Math.floor((s - ctx.measureText(lbl).width) / 2), 0])
 		if (!(Object.keys(vars).includes("menu"))) {
 			vars.menu = ["Play", "Credits"]
 			vars.menu = {...Object.fromEntries(Object.entries(vars.menu)), length: vars.menu.length, selected: 0}
 			vars.menu.width = Math.max(...Array.from(vars.menu).map(function(a) {return ctx.measureText(a).width}))
 			vars.menu.x = Math.floor((s - vars.menu.width) / 2)
 		}
+		var m = Object.entries(Array.from(vars.menu))
+		for (var [ind, opt] of m) {
+			ind = parseInt(ind) + 1.5
+			drawTxt(opt, [vars.menu.x, ind * 16])
+		}
+		ctx.drawImage(document.getElementById("picker"), vars.menu.x - document.getElementById("picker").width - 4, (vars.menu.selected+2-(Math.ceil(document.getElementById("picker").height)/32))*16)
 	}
 	ctx.font = "16px m5x7"
+	await document.fonts.load(ctx.font)
 	ctx.textBaseline = "top"
 	ctx.imageSmoothingEnabled = false
+	vars.state = "menu"
 	requestAnimationFrame(async function() {
 		var a = ctx.fillStyle
 		ctx.fillStyle = "Black"
