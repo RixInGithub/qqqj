@@ -9,12 +9,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Install Butler
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip -d butler
           sudo mv butler/butler /usr/local/bin
-
       - name: Deploy to Itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
