@@ -1,20 +1,22 @@
 name: Deploy to Itch.io
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
+
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Install Butler
-                run: |
-                    curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/head/butler.zip
-                    unzip butler.zip -d butler
-                    sudo mv butler/butler /usr/local/bin
-            - name: Deploy to Itch.io
-                env:
-                    BUTLER_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
-                run: |
-                    butler push ./path/to/your/game-folder tyrunts/qqqj:channel-name
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/head/butler.zip
+          unzip butler.zip -d butler
+          sudo mv butler/butler /usr/local/bin
+
+      - name: Deploy to Itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
+        run: |
+          butler push . tyrunts/qqqj:html5
