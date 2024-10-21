@@ -56,10 +56,9 @@
 		ctx.drawImage(c, 0, 0, c.width, c.height, 0, 0, s, s)
 	}
 	function render() {
-		ctx.fillStyle = "#800000"
-		ctx.fillRect(0, 0, s, s)
 		ctx.fillStyle = "Red"
-		vars.fontHeight = ctx.measureText("qqqj").height
+		ctx.fillRect(0, 0, s, s)
+		ctx.fillStyle = "#800000"
 		drawTxt("qqqj", [Math.floor((s - ctx.measureText("qqqj").width) / 2), 0])
 		if (!(Object.keys(vars).includes("menu"))) {
 			vars.menu = ["Play", "Credits"]
